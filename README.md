@@ -79,3 +79,15 @@ Ejecuta `sql/004_validation_queries.sql` para validar:
 - incidencias (warning/critical/error),
 - tendencia por estado última hora,
 - checks más lentos.
+
+
+### Diagnóstico rápido de errores comunes
+
+- **`No se ha inicializado la propiedad ConnectionString`**
+  - Significa que `ConnectionStrings:AdminDb` llegó vacío.
+  - Verifica `appsettings.json` o define variable de entorno:
+  - `PIVOT_ConnectionStrings__AdminDb="Server=...;Database=adminDB;..."`
+
+- **Error al descifrar credenciales DPAPI**
+  - Debes cifrar y ejecutar en la **misma máquina** (DPAPI `LocalMachine`) y con la **misma entropía**.
+  - Si cambiaste servidor o entropía, vuelve a generar `UserNameEncrypted` y `PasswordEncrypted`.

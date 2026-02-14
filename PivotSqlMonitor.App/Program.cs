@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,14 @@ var services = new ServiceCollection();
 services.AddSingleton(configuration);
 
 var adminConnectionString = configuration.GetConnectionString("AdminDb")
-                            ?? throw new InvalidOperationException("Missing AdminDb connection string");
+                            ?? configuration["ConnectionStrings:AdminDb"]
+                            ?? string.Empty;
+
+if (string.IsNullOrWhiteSpace(adminConnectionString))
+{
+    throw new InvalidOperationException(
+        "ConnectionStrings:AdminDb está vacío. Configura appsettings.json o la variable de entorno PIVOT_ConnectionStrings__AdminDb.");
+}
 
 var targetOptions = configuration.GetSection("TargetSql").Get<TargetSqlOptions>()
                    ?? throw new InvalidOperationException("Missing TargetSql section");
@@ -68,9 +76,17 @@ services.AddSingleton<Func<MonitoredServer, string>>(_ => server =>
             throw new InvalidOperationException("TargetSql.UserNameEncrypted y TargetSql.PasswordEncrypted son requeridos para AuthMode=SqlLogin");
         }
 
-        builder.IntegratedSecurity = false;
-        builder.UserID = CredentialProtector.Unprotect(targetOptions.UserNameEncrypted, credentialEntropy);
-        builder.Password = CredentialProtector.Unprotect(targetOptions.PasswordEncrypted, credentialEntropy);
+        try
+        {
+            builder.IntegratedSecurity = false;
+            builder.UserID = CredentialProtector.Unprotect(targetOptions.UserNameEncrypted, credentialEntropy);
+            builder.Password = CredentialProtector.Unprotect(targetOptions.PasswordEncrypted, credentialEntropy);
+        }
+        catch (CryptographicException ex)
+        {
+            throw new InvalidOperationException(
+                "No se pudieron descifrar credenciales TargetSql. Verifica que fueron cifradas en la misma máquina y con la misma entropía.", ex);
+        }
     }
     else
     {
