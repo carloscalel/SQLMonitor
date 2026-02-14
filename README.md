@@ -21,6 +21,7 @@ Implementación inicial (Fase 1 + Fase 2) de un monitor centralizado para SQL Se
 - `sql/001_schema.sql`: DDL completo.
 - `sql/002_seed.sql`: datos iniciales de ejemplo.
 - `sql/003_sql_agent_job.sql`: creación de SQL Agent Job con **CmdExec** (sin PowerShell).
+- `sql/004_validation_queries.sql`: consultas de validación operativa.
 
 ## Flujo de ejecución
 
@@ -35,11 +36,46 @@ Implementación inicial (Fase 1 + Fase 2) de un monitor centralizado para SQL Se
 
 > Requiere SDK de .NET 8 para compilar.
 
-Ejemplo:
-
 ```bash
 dotnet restore
 dotnet publish PivotSqlMonitor.App/PivotSqlMonitor.App.csproj -c Release -r win-x64 --self-contained true
 ```
 
 Copia el `.exe` publicado al servidor pivote y programa `sql/003_sql_agent_job.sql`.
+
+## Autenticación SQL con usuario en forma protegida
+
+Si no quieres usar autenticación integrada de Windows, puedes usar `AuthMode = SqlLogin` y guardar usuario/password cifrados con DPAPI (`LocalMachine`).
+
+### 1) Generar valores cifrados
+
+```bash
+PivotSqlMonitor.App.exe --encrypt-credential "monitor_user" "MI-ENTROPIA-SEGURA"
+PivotSqlMonitor.App.exe --encrypt-credential "P@ssw0rd!" "MI-ENTROPIA-SEGURA"
+```
+
+### 2) Configurar `appsettings.json`
+
+```json
+"CredentialEncryption": {
+  "Entropy": "MI-ENTROPIA-SEGURA"
+},
+"TargetSql": {
+  "AuthMode": "SqlLogin",
+  "EncryptConnection": true,
+  "TrustServerCertificate": true,
+  "UserNameEncrypted": "<base64_cifrado_usuario>",
+  "PasswordEncrypted": "<base64_cifrado_password>"
+}
+```
+
+> Nota: DPAPI `LocalMachine` permite descifrar únicamente en el mismo servidor donde se cifró. Ideal para servidor pivote/SQL Agent.
+
+## Validaciones finales en SQL Server
+
+Ejecuta `sql/004_validation_queries.sql` para validar:
+- resumen de corridas recientes,
+- detalle de la última corrida,
+- incidencias (warning/critical/error),
+- tendencia por estado última hora,
+- checks más lentos.
