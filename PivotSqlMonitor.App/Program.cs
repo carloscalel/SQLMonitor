@@ -57,6 +57,9 @@ services.AddSingleton<IMonitorCheck, PingCheck>();
 services.AddSingleton<IMonitorCheck, TcpPortCheck>();
 services.AddSingleton<IMonitorCheck, SqlLoginCheck>();
 services.AddSingleton<IMonitorCheck, DiskFreeCheck>();
+services.AddSingleton<IMonitorCheck, MongoPingCheck>();
+services.AddSingleton<IMonitorCheck, MongoTcpPortCheck>();
+services.AddSingleton<IMonitorCheck, MongoLoginCheck>();
 
 services.AddSingleton<Func<MonitoredServer, string>>(_ => server =>
 {
