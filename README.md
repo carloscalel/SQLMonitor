@@ -115,3 +115,9 @@ Para `MONGO_LOGIN`, usa `ServerCheckConfig.ExtraConfigJson` con esta forma:
 ```
 
 Opcionalmente también puedes enviar `connectionString` completa en `ExtraConfigJson`.
+
+
+- **`MONGO_LOGIN sin credenciales...`**
+  - Configura `ExtraConfigJson` en `ServerCheckConfig` con `username/password` o `connectionString`.
+
+- Si un error excede 512 caracteres, `MetricText` se trunca automáticamente para evitar fallo de inserción en `MonitorResult`.

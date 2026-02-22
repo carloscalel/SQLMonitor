@@ -30,7 +30,7 @@ public sealed class MongoLoginCheck : IMonitorCheck
                 {
                     CheckCode = Code,
                     Status = MonitorStatus.Warning,
-                    Message = "MONGO_LOGIN sin credenciales configuradas en ExtraConfigJson.",
+                    Message = "MONGO_LOGIN sin credenciales. Agrega username/password o connectionString en ExtraConfigJson.",
                     StartedAtUtc = startedAt,
                     FinishedAtUtc = DateTime.UtcNow,
                     DurationMs = sw.ElapsedMilliseconds

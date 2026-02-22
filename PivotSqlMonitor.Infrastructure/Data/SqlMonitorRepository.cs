@@ -8,6 +8,7 @@ namespace PivotSqlMonitor.Infrastructure.Data;
 
 public sealed class SqlMonitorRepository : IMonitorRepository
 {
+    private const int MetricTextMaxLength = 512;
     private readonly string _adminConnectionString;
 
     public SqlMonitorRepository(string adminConnectionString)
@@ -79,6 +80,9 @@ INSERT INTO dbo.MonitorResult
 VALUES
 (@runId, @serverId, @checkTypeId, @startedAt, @finishedAt, @durationMs, @status, @metricValue, @metricText, @rawPayloadJson);";
 
+        var metricText = Truncate(result.Message, MetricTextMaxLength);
+        var status = Enum.GetName(typeof(MonitorStatus), result.Status)?.ToUpperInvariant() ?? "ERROR";
+
         await using var connection = new SqlConnection(_adminConnectionString);
         await connection.ExecuteAsync(new CommandDefinition(sql, new
         {
@@ -88,10 +92,27 @@ VALUES
             startedAt = result.StartedAtUtc,
             finishedAt = result.FinishedAtUtc,
             durationMs = result.DurationMs,
-            status = Enum.GetName(typeof(MonitorStatus), result.Status)?.ToUpperInvariant(),
+            status,
             metricValue = result.NumericValue,
-            metricText = result.Message,
+            metricText,
             rawPayloadJson = result.RawPayloadJson
         }, cancellationToken: cancellationToken));
+    }
+
+    private static string? Truncate(string? value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value) || value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        const string suffix = "...(truncated)";
+        var allowed = maxLength - suffix.Length;
+        if (allowed <= 0)
+        {
+            return value[..maxLength];
+        }
+
+        return value[..allowed] + suffix;
     }
 }
