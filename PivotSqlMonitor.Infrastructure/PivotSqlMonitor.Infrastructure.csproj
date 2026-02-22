@@ -8,5 +8,6 @@
     <ProjectReference Include="..\PivotSqlMonitor.Core\PivotSqlMonitor.Core.csproj" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.29.0" />
   </ItemGroup>
 </Project>

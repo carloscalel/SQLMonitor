@@ -6,7 +6,8 @@ Implementación inicial (Fase 1 + Fase 2) de un monitor centralizado para SQL Se
 
 - Fase 1
   - Motor de corrida (`MonitorRun`) y almacenamiento (`MonitorResult`).
-  - Checks: `PING`, `TCP_PORT`, `SQL_LOGIN`, `DISK_FREE` (detalle de todos los volúmenes detectados).
+  - Checks SQL: `PING`, `TCP_PORT`, `SQL_LOGIN`, `DISK_FREE` (detalle de todos los volúmenes detectados).
+  - Checks MongoDB: `MONGO_PING`, `MONGO_TCP_PORT`, `MONGO_LOGIN`.
   - Repositorio SQL central (`adminDB`) vía Dapper.
 - Fase 2
   - Configuración por servidor/check (`ServerCheckConfig`).
@@ -94,3 +95,23 @@ Ejecuta `sql/004_validation_queries.sql` para validar:
 
 
 - `DISK_FREE` ahora guarda el mínimo porcentaje en `MetricValue` y el detalle de todos los discos en `MetricText`/`RawPayloadJson`.
+
+
+## Checks MongoDB (implementación mínima)
+
+Se implementaron 3 checks:
+- `MONGO_PING`: comando `ping` contra MongoDB.
+- `MONGO_TCP_PORT`: prueba de conectividad TCP al puerto (default 27017).
+- `MONGO_LOGIN`: valida conexión autenticada (`connectionStatus`).
+
+Para `MONGO_LOGIN`, usa `ServerCheckConfig.ExtraConfigJson` con esta forma:
+
+```json
+{
+  "authDatabase": "admin",
+  "username": "mongo_monitor",
+  "password": "CambiarPassword"
+}
+```
+
+Opcionalmente también puedes enviar `connectionString` completa en `ExtraConfigJson`.
