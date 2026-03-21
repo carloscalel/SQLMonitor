@@ -6,6 +6,11 @@ namespace PivotSqlMonitor.Infrastructure.Checks;
 
 internal static class MongoConnectionFactory
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     internal static MongoClient BuildClient(CheckExecutionContext context, out MongoSettings settings)
     {
         settings = ParseSettings(context.Config.ExtraConfigJson);
@@ -25,7 +30,7 @@ internal static class MongoConnectionFactory
 
         try
         {
-            return JsonSerializer.Deserialize<MongoSettings>(json) ?? new MongoSettings();
+            return JsonSerializer.Deserialize<MongoSettings>(json, JsonOptions) ?? new MongoSettings();
         }
         catch
         {
@@ -40,8 +45,8 @@ internal static class MongoConnectionFactory
             return settings.ConnectionString;
         }
 
-        var host = server.HostOrIp;
-        var port = server.Port == 0 ? 27017 : server.Port;
+        var host = string.IsNullOrWhiteSpace(settings.Host) ? server.HostOrIp : settings.Host;
+        var port = settings.Port ?? (server.Port == 0 ? 27017 : server.Port);
         var authDb = string.IsNullOrWhiteSpace(settings.AuthDatabase) ? "admin" : settings.AuthDatabase;
 
         if (!string.IsNullOrWhiteSpace(settings.Username) && !string.IsNullOrWhiteSpace(settings.Password))
@@ -57,6 +62,8 @@ internal static class MongoConnectionFactory
     internal sealed class MongoSettings
     {
         public string? ConnectionString { get; set; }
+        public string? Host { get; set; }
+        public int? Port { get; set; }
         public string? Username { get; set; }
         public string? Password { get; set; }
         public string? AuthDatabase { get; set; } = "admin";

@@ -114,10 +114,13 @@ Para `MONGO_LOGIN`, usa `ServerCheckConfig.ExtraConfigJson` con esta forma:
 }
 ```
 
-Opcionalmente también puedes enviar `connectionString` completa en `ExtraConfigJson`.
+Opcionalmente también puedes enviar `connectionString` completa en `ExtraConfigJson` (recomendado si conectas a `localhost` o host distinto al `MonitoredServer.HostOrIp`).
 
 
 - **`MONGO_LOGIN sin credenciales...`**
   - Configura `ExtraConfigJson` en `ServerCheckConfig` con `username/password` o `connectionString`.
 
 - Si un error excede 512 caracteres, `MetricText` se trunca automáticamente para evitar fallo de inserción en `MonitorResult`.
+
+
+- Si ves error de `Host desconocido` (ej. `mongo01`), usa `connectionString` en `ExtraConfigJson` o define `host`/`port` allí para sobreescribir el `MonitoredServer`.

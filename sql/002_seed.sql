@@ -29,7 +29,7 @@ VALUES ('MONGO01', 'MONGO01', 'PROD', 1, 27017);
 INSERT INTO dbo.ServerCheckConfig(ServerId, CheckTypeId, ExtraConfigJson)
 SELECT s.ServerId, c.CheckTypeId,
        CASE WHEN c.Code = 'MONGO_LOGIN'
-            THEN N'{"authDatabase":"admin","username":"mongo_monitor","password":"CambiarPassword"}'
+            THEN N'{"connectionString":"mongodb://mongo_monitor:CambiarPassword@localhost:27017/admin?authSource=admin"}'
             ELSE NULL END
 FROM dbo.MonitoredServer s
 JOIN dbo.MonitorCheckType c ON c.Code IN ('MONGO_PING', 'MONGO_TCP_PORT', 'MONGO_LOGIN')
